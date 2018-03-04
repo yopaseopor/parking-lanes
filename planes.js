@@ -197,7 +197,7 @@ var saving = false;
 
 var viewMinZoom = 15;
 
-var highwayRegex = new RegExp('^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|living_street|path|sidewalk');
+var highwayRegex = new RegExp('^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|living_street|path|footway|sidewalk');
 
 
 // ------------- functions -------------------
@@ -355,7 +355,7 @@ function wayIsMajor(tags)
 {
     var findResult = tags.find(x => x.$k == 'highway');
     if (findResult) {
-        if (findResult.$v.search(/^motorway|trunk|primary|secondary|tertiary|unclassified|path|sidewalk|residential/) >= 0)
+        if (findResult.$v.search(/^motorway|trunk|primary|secondary|tertiary|unclassified|path|footway|sidewalk|residential/) >= 0)
             return true;
         else
             return false;
@@ -401,7 +401,7 @@ function getConditions(side, tags) {
     var sides = ['both', side];
 
     var defaultTags = sides.map(side => 'parking:condition:' + side + ':default')
-        .concat(sides.map(side => 'parking:lane:' + side));
+        .concat(sides.map(side => 'wheelchair:' + side));
 
     var findResult;
     for (var tag of defaultTags) {
@@ -415,7 +415,7 @@ function getConditions(side, tags) {
     for (var i = 1; i < 10; i++) {
         var index = i > 1 ? ':' + i : '';
 
-        var laneTags = sides.map(side => 'parking:lane:' + side + index);
+        var laneTags = sides.map(side => 'wheelchair:' + side + index);
         var conditionTags = sides.map(side => 'parking:condition:' + side + index);
         var intervalTags = sides.map(side => 'parking:condition:' + side + index + ':time_interval');
 
@@ -510,15 +510,15 @@ function getQueryParkingLanes() {
     } else {
         var bbox = [bounds.getSouth(), bounds.getWest(), bounds.getNorth(), bounds.getEast()].join(',');
         return editorMode
-            ? '[out:xml];(way[highway~"^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|living_street|path|sidewalk"](' + bbox + ');)->.a;(.a;.a >;.a <;);out meta;'
-            : '[out:xml];(way[highway][~"^parking:lane:.*"~"."](' + bbox + ');)->.a;(.a;.a >;.a <;);out meta;';
+            ? '[out:xml];(way[highway~"^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|living_street|path|footway|sidewalk"](' + bbox + ');)->.a;(.a;.a >;.a <;);out meta;'
+            : '[out:xml];(way[highway][~"^wheelchair:.*"~"."](' + bbox + ');)->.a;(.a;.a >;.a <;);out meta;';
     }
 }
 
 function getQueryHighways() {
     var bounds = map.getBounds();
     var bbox = [bounds.getSouth(), bounds.getWest(), bounds.getNorth(), bounds.getEast()].join(',');
-    var tag = 'highway~"^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|path|sidewalk|living_street"';
+    var tag = 'highway~"^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|path|footway|sidewalk|living_street"';
     return '[out:xml];(way[' + tag + '](' + bbox + ');>;way[' + tag + '](' + bbox + ');<;);out meta;';
 }
 
@@ -527,7 +527,7 @@ function getQueryOsmId(id) {
 }
 
 var tagsBlock = [
-    "parking:lane:{side}",
+    "wheelchair:{side}",
     "parking:condition:{side}",
     "parking:condition:{side}:time_interval",
     "parking:condition:{side}:default",
@@ -720,11 +720,11 @@ function getTagsBlock(side, osm) {
     sign.width = 20;
     sign.className = 'sign';
     sign.onclick = () => {
-        document.getElementById(osm.$id)['parking:lane:' + side].value = 'no_stopping';
+        document.getElementById(osm.$id)['wheelchair:' + side].value = 'no_stopping';
         document.getElementById(osm.$id)['parking:condition:' + side].value = '';
         document.getElementById(osm.$id)['parking:condition:' + side + ':time_interval'].value = '';
         document.getElementById(osm.$id)['parking:condition:' + side + ':default'].value = '';
-        document.getElementById(osm.$id)['parking:lane:' + side].onchange();
+        document.getElementById(osm.$id)['wheelchair:' + side].onchange();
     };
     div.appendChild(sign);
 
@@ -734,11 +734,11 @@ function getTagsBlock(side, osm) {
     sign.width = 20;
     sign.className = 'sign';
     sign.onclick = () => {
-        document.getElementById(osm.$id)['parking:lane:' + side].value = 'no_parking';
+        document.getElementById(osm.$id)['wheelchair:' + side].value = 'no_parking';
         document.getElementById(osm.$id)['parking:condition:' + side].value = '';
         document.getElementById(osm.$id)['parking:condition:' + side + ':time_interval'].value = '';
         document.getElementById(osm.$id)['parking:condition:' + side + ':default'].value = '';
-        document.getElementById(osm.$id)['parking:lane:' + side].onchange();
+        document.getElementById(osm.$id)['wheelchair:' + side].onchange();
     };
     div.appendChild(sign);
 
@@ -748,11 +748,11 @@ function getTagsBlock(side, osm) {
     sign.width = 20;
     sign.className = 'sign';
     sign.onclick = () => {
-        document.getElementById(osm.$id)['parking:lane:' + side].value = 'no_parking';
+        document.getElementById(osm.$id)['wheelchair:' + side].value = 'no_parking';
         document.getElementById(osm.$id)['parking:condition:' + side + ':time_interval'].value = '1-31/2';
         document.getElementById(osm.$id)['parking:condition:' + side].value = '';
         document.getElementById(osm.$id)['parking:condition:' + side + ':default'].value = '';
-        document.getElementById(osm.$id)['parking:lane:' + side].onchange();
+        document.getElementById(osm.$id)['wheelchair:' + side].onchange();
     };
     div.appendChild(sign);
 
@@ -762,11 +762,11 @@ function getTagsBlock(side, osm) {
     sign.width = 20;
     sign.className = 'sign';
     sign.onclick = () => {
-        document.getElementById(osm.$id)['parking:lane:' + side].value = 'no_parking';
+        document.getElementById(osm.$id)['wheelchair:' + side].value = 'no_parking';
         document.getElementById(osm.$id)['parking:condition:' + side + ':time_interval'].value = '2-30/2';
         document.getElementById(osm.$id)['parking:condition:' + side].value = '';
         document.getElementById(osm.$id)['parking:condition:' + side + ':default'].value = '';
-        document.getElementById(osm.$id)['parking:lane:' + side].onchange();
+        document.getElementById(osm.$id)['wheelchair:' + side].onchange();
     };
     div.appendChild(sign);
 
@@ -776,11 +776,11 @@ function getTagsBlock(side, osm) {
     sign.width = 20;
     sign.className = 'sign';
     sign.onclick = () => {
-        document.getElementById(osm.$id)['parking:lane:' + side].value = '';
+        document.getElementById(osm.$id)['wheelchair:' + side].value = '';
         document.getElementById(osm.$id)['parking:condition:' + side + ':time_interval'].value = '';
         document.getElementById(osm.$id)['parking:condition:' + side].value = 'free';
         document.getElementById(osm.$id)['parking:condition:' + side + ':default'].value = '';
-        document.getElementById(osm.$id)['parking:lane:' + side].onchange();
+        document.getElementById(osm.$id)['wheelchair:' + side].onchange();
     };
     div.appendChild(sign);
 
@@ -790,11 +790,11 @@ function getTagsBlock(side, osm) {
     sign.width = 40;
     sign.className = 'sign';
     sign.onclick = () => {
-        document.getElementById(osm.$id)['parking:lane:' + side].value = '';
+        document.getElementById(osm.$id)['wheelchair:' + side].value = '';
         document.getElementById(osm.$id)['parking:condition:' + side + ':time_interval'].value = '';
         document.getElementById(osm.$id)['parking:condition:' + side].value = 'ticket';
         document.getElementById(osm.$id)['parking:condition:' + side + ':default'].value = '';
-        document.getElementById(osm.$id)['parking:lane:' + side].onchange();
+        document.getElementById(osm.$id)['wheelchair:' + side].onchange();
     };
     div.appendChild(sign);
 
@@ -814,7 +814,7 @@ function getTagsBlock(side, osm) {
         var value = osm.tag.filter(x => x.$k === tag)[0];
         var tagval;
 
-        if (tag == 'parking:lane:' + side) {
+        if (tag == 'wheelchair:' + side) {
             tagval = document.createElement('select');
             var additVals = value && valuesLane.indexOf(value.$v) == -1 ? ['', value.$v] : [''];
 
@@ -1041,7 +1041,7 @@ function save(form) {
 function removeFromOsmChangeset(id) {
     var form = document.getElementById(id);
     form.reset();
-    form['parking:lane:both'].onchange();
+    form['wheelchair:both'].onchange();
 
     var index = change.osmChange.modify.way.findIndex(x => x.$id == id);
 
