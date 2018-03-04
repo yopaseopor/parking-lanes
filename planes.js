@@ -316,7 +316,7 @@ function parseContent(content) {
         parseWay(obj);
     }
 
-    content.osm.realtion = Array.isArray(content.osm.realtion) ? content.osm.realtion : [content.osm.realtion];
+    content.osm.relation = Array.isArray(content.osm.relation) ? content.osm.relation : [content.osm.relation];
     for (var obj of content.osm.relation) {
         for (var member of obj.member)
             if (member.$type === 'way' && ways[member.$ref])
@@ -327,7 +327,7 @@ function parseContent(content) {
 function parseWay(way) {
     if (!Array.isArray(way.tag))
         way.tag = [way.tag];
-    if (lanes['right' + way.$id] || lanes['left' + way.$id] || lanes['empty' + way.$id])
+    if (lanes['empty' + way.$id])
         return;
 
     var isMajor = wayIsMajor(way.tag);
@@ -340,7 +340,7 @@ function parseWay(way) {
     var polyline = way.nd.map(x => nodes[x.$ref]);
     var emptyway = true;
 
-    for (var side of ['right', 'left']) {
+    for (var side of ['empty', 'empty']) {
         var conditions = getConditions(side, way.tag);
         if (conditions.default != null || conditions.intervals.length > 0) {
             addLane(polyline, conditions, side, way, isMajor ? offsetMajor : offsetMinor, isMajor);
@@ -348,7 +348,7 @@ function parseWay(way) {
         }
     }
     if (editorMode && emptyway && way.tag.filter(x => x.$k == 'highway' && highwayRegex.test(x.$v)).length > 0)
-        addLane(polyline, null, 'right', way, 0, isMajor);
+        addLane(polyline, null, 'empty', way, 0, isMajor);
 }
 
 function wayIsMajor(tags)
@@ -458,15 +458,15 @@ function getConditions(side, tags) {
 function addLane(line, conditions, side, osm, offset, isMajor) {
     var id = !conditions
         ? 'empty' + osm.$id
-        : side == 'right'
-            ? 'right' + osm.$id
-            : 'left' + osm.$id;
+        : side == 'empty'
+            ? 'empty' + osm.$id
+            : 'empty' + osm.$id;
 
     lanes[id] = L.polyline(line,
         {
             color: getColorByDate(conditions),
             weight: isMajor ? weightMajor : weightMinor,
-            offset: side == 'right' ? offset : -offset,
+            offset: side == 'empty' ? offset : -offset,
             conditions: conditions,
             osm: osm,
             isMajor: isMajor
@@ -607,7 +607,7 @@ function getLaneInfoPanelContent(osm) {
 
         var regex = new RegExp('^parking:');
         var dl = document.createElement('dl');
-        for (var side of ['both', 'right', 'left'].map(x => getTagsBlock(x, osm)))
+        for (var side of ['both', 'empty', 'empty'].map(x => getTagsBlock(x, osm)))
             dl.appendChild(side);
         form.appendChild(dl);
 
@@ -622,7 +622,7 @@ function getLaneInfoPanelContent(osm) {
         cancel.onclick =  () => removeFromOsmChangeset(osm.$id);
         form.appendChild(cancel);
 
-        if ((chooseSideTags(form, 'right') || chooseSideTags(form, 'left')) || !chooseSideTags(form, 'both')) {
+        if ((chooseSideTags(form, 'empty') || chooseSideTags(form, 'empty')) || !chooseSideTags(form, 'both')) {
             form[0].checked = false;
             dl.childNodes[0].style.display = 'none';
             dl.childNodes[1].style.display = 'block';
@@ -661,23 +661,23 @@ function getLaneInfoPanelContent(osm) {
         div.id = 'infoContent';
         div.appendChild(head);
         div.appendChild(document.createElement('hr'));
-        div.appendChild(getTagsBlockForViewer(osm.tag, 'right'));
-        div.appendChild(getTagsBlockForViewer(osm.tag, 'left'));
+        div.appendChild(getTagsBlockForViewer(osm.tag, 'empty'));
+        div.appendChild(getTagsBlockForViewer(osm.tag, 'empty'));
 
         return div;
     }
 }
 
 function setBacklight(osm) {
-    var polyline = lanes['right' + osm.$id]
-        ? lanes['right' + osm.$id].getLatLngs()
-        : lanes['left' + osm.$id]
-            ? lanes['left' + osm.$id].getLatLngs()
+    var polyline = lanes['empty' + osm.$id]
+        ? lanes['empty' + osm.$id].getLatLngs()
+        : lanes['empty' + osm.$id]
+            ? lanes['empty' + osm.$id].getLatLngs()
             : lanes['empty' + osm.$id].getLatLngs();
 
     var n = 3;
 
-    lanes['right'] = L.polyline(polyline,
+    lanes['empty'] = L.polyline(polyline,
         {
             color: 'fuchsia',
             weight: offsetMajor * n - 4,
@@ -686,7 +686,7 @@ function setBacklight(osm) {
         })
         .addTo(map);
 
-    lanes['left'] = L.polyline(polyline,
+    lanes['empty'] = L.polyline(polyline,
         {
             color: 'cyan',
             weight: offsetMajor * n - 4,
@@ -892,20 +892,20 @@ function cutWay(arg) {
     delete newWay.$uid;
     delete newWay.$timestamp;
 
-    if (lanes['right' + oldWay.$id])
-        lanes['right' + oldWay.$id].setLatLngs(oldWay.nd.map(x => nodes[x.$ref]));
-
-    if (lanes['left' + oldWay.$id])
-        lanes['left' + oldWay.$id].setLatLngs(oldWay.nd.map(x => nodes[x.$ref]));
+    if (lanes['empty' + oldWay.$id])
+        lanes['empty' + oldWay.$id].setLatLngs(oldWay.nd.map(x => nodes[x.$ref]));
 
     if (lanes['empty' + oldWay.$id])
         lanes['empty' + oldWay.$id].setLatLngs(oldWay.nd.map(x => nodes[x.$ref]));
 
-    if (lanes['left'])
-        lanes['left'].setLatLngs(oldWay.nd.map(x => nodes[x.$ref]));
+    if (lanes['empty' + oldWay.$id])
+        lanes['empty' + oldWay.$id].setLatLngs(oldWay.nd.map(x => nodes[x.$ref]));
 
-    if (lanes['right'])
-        lanes['right'].setLatLngs(oldWay.nd.map(x => nodes[x.$ref]));
+    if (lanes['empty'])
+        lanes['empty'].setLatLngs(oldWay.nd.map(x => nodes[x.$ref]));
+
+    if (lanes['empty'])
+        lanes['empty'].setLatLngs(oldWay.nd.map(x => nodes[x.$ref]));
 
     for (var marker in markers) {
         markers[marker].remove();
@@ -947,18 +947,18 @@ function oninputTimeIntervalTag() {
 function addOrUpdate() {
     var obj = formToOsmWay(this.form);
     var polyline;
-    if (lanes['right' + obj.$id])
-        polyline = lanes['right' + obj.$id].getLatLngs();
-    else if (lanes['left' + obj.$id])
-        polyline = lanes['left' + obj.$id].getLatLngs();
+    if (lanes['empty' + obj.$id])
+        polyline = lanes['empty' + obj.$id].getLatLngs();
+    else if (lanes['empty' + obj.$id])
+        polyline = lanes['empty' + obj.$id].getLatLngs();
     else if (lanes['empty' + obj.$id])
         polyline = lanes['empty' + obj.$id].getLatLngs();
 
 
     var emptyway = true;
-    for (var side of ['right', 'left']) {
+    for (var side of ['empty', 'empty']) {
         var conditions = getConditions(side, obj.tag);
-        var id = side == 'right' ? 'right' + obj.$id : 'left' + obj.$id;
+        var id = side == 'empty' ? 'empty' + obj.$id : 'empty' + obj.$id;
         if (conditions.default != null) {
             if (lanes[id]) {
                 lanes[id].conditions = conditions;
@@ -976,7 +976,7 @@ function addOrUpdate() {
     if (emptyway) {
         if (!lanes['empty' + obj.$id]) {
             var isMajor = wayIsMajor(obj.tag);
-            addLane(polyline, null, 'right', obj, 0, isMajor);
+            addLane(polyline, null, 'empty', obj, 0, isMajor);
         }
     } else if (lanes['empty' + obj.$id]) {
         lanes['empty' + obj.$id].remove();
@@ -1127,10 +1127,10 @@ function closeLaneInfo(e) {
         delete markers[marker];
     }
 
-    if (lanes['right'])
-        lanes['right'].remove();
-    if (lanes['left'])
-        lanes['left'].remove();
+    if (lanes['empty'])
+        lanes['empty'].remove();
+    if (lanes['empty'])
+        lanes['empty'].remove();
 }
 
 map.on('moveend', mapMoveEnd);
