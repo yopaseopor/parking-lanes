@@ -179,7 +179,7 @@ var newWayId = -1;
 var change = {
     osmChange: {
         $version: '0.6',
-        $generator: 'Parking lane ' + version,
+        $generator: 'Test Parking lane ' + version,
         modify: { way: [] },
         create: { way: [] }
     }
@@ -197,7 +197,7 @@ var saving = false;
 
 var viewMinZoom = 15;
 
-var highwayRegex = new RegExp('^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|living_street');
+var highwayRegex = new RegExp('^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|living_street|path|sidewalk');
 
 
 // ------------- functions -------------------
@@ -271,7 +271,7 @@ function mapMoveEnd() {
     }
 
     for (var lane in lanes) {
-        if (lane === 'right' || lane === 'left' || lane.startsWith('empty'))
+        if (lane.startsWith('empty'))
             continue;
         var sideOffset = lanes[lane].options.offset > 0 ? 1 : -1;
         var isMajor = lanes[lane].options.isMajor;
@@ -355,7 +355,7 @@ function wayIsMajor(tags)
 {
     var findResult = tags.find(x => x.$k == 'highway');
     if (findResult) {
-        if (findResult.$v.search(/^motorway|trunk|primary|secondary|tertiary|unclassified|residential/) >= 0)
+        if (findResult.$v.search(/^motorway|trunk|primary|secondary|tertiary|unclassified|path|sidewalk|residential/) >= 0)
             return true;
         else
             return false;
@@ -510,7 +510,7 @@ function getQueryParkingLanes() {
     } else {
         var bbox = [bounds.getSouth(), bounds.getWest(), bounds.getNorth(), bounds.getEast()].join(',');
         return editorMode
-            ? '[out:xml];(way[highway~"^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|living_street"](' + bbox + ');)->.a;(.a;.a >;.a <;);out meta;'
+            ? '[out:xml];(way[highway~"^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|living_street|path|sidewalk"](' + bbox + ');)->.a;(.a;.a >;.a <;);out meta;'
             : '[out:xml];(way[highway][~"^parking:lane:.*"~"."](' + bbox + ');)->.a;(.a;.a >;.a <;);out meta;';
     }
 }
@@ -518,7 +518,7 @@ function getQueryParkingLanes() {
 function getQueryHighways() {
     var bounds = map.getBounds();
     var bbox = [bounds.getSouth(), bounds.getWest(), bounds.getNorth(), bounds.getEast()].join(',');
-    var tag = 'highway~"^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|living_street"';
+    var tag = 'highway~"^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|path|sidewalk|living_street"';
     return '[out:xml];(way[' + tag + '](' + bbox + ');>;way[' + tag + '](' + bbox + ');<;);out meta;';
 }
 
