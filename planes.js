@@ -223,7 +223,7 @@ document.getElementById('editorcb').onchange = (chb) => {
         editorMode = false;
         document.getElementById('editorActive').style.color = 'black';
         for (var lane in lanes)
-            if (lane.startsWith('empty')) {
+            if (lane.startsWith('')) {
                 lanes[lane].remove();
                 delete lanes[lane];
             }
@@ -271,7 +271,7 @@ function mapMoveEnd() {
     }
 
     for (var lane in lanes) {
-        if (lane.startsWith('empty'))
+        if (lane.startsWith(''))
             continue;
         var sideOffset = lanes[lane].options.offset > 0 ? 1 : -1;
         var isMajor = lanes[lane].options.isMajor;
@@ -327,7 +327,7 @@ function parseContent(content) {
 function parseWay(way) {
     if (!Array.isArray(way.tag))
         way.tag = [way.tag];
-    if (lanes['empty' + way.$id])
+    if (lanes['' + way.$id])
         return;
 
     var isMajor = wayIsMajor(way.tag);
@@ -340,7 +340,7 @@ function parseWay(way) {
     var polyline = way.nd.map(x => nodes[x.$ref]);
     var emptyway = true;
 
-    for (var side of ['empty', 'empty']) {
+    for (var side of ['', '']) {
         var conditions = getConditions(side, way.tag);
         if (conditions.default != null || conditions.intervals.length > 0) {
             addLane(polyline, conditions, side, way, isMajor ? offsetMajor : offsetMinor, isMajor);
@@ -348,7 +348,7 @@ function parseWay(way) {
         }
     }
     if (editorMode && emptyway && way.tag.filter(x => x.$k == 'highway' && highwayRegex.test(x.$v)).length > 0)
-        addLane(polyline, null, 'empty', way, 0, isMajor);
+        addLane(polyline, null, '', way, 0, isMajor);
 }
 
 function wayIsMajor(tags)
@@ -457,16 +457,16 @@ function getConditions(side, tags) {
 
 function addLane(line, conditions, side, osm, offset, isMajor) {
     var id = !conditions
-        ? 'empty' + osm.$id
-        : side == 'empty'
-            ? 'empty' + osm.$id
-            : 'empty' + osm.$id;
+        ? '' + osm.$id
+        : side == ''
+            ? '' + osm.$id
+            : '' + osm.$id;
 
     lanes[id] = L.polyline(line,
         {
             color: getColorByDate(conditions),
             weight: isMajor ? weightMajor : weightMinor,
-            offset: side == 'empty' ? offset : -offset,
+            offset: side == '' ? offset : -offset,
             conditions: conditions,
             osm: osm,
             isMajor: isMajor
@@ -607,7 +607,7 @@ function getLaneInfoPanelContent(osm) {
 
         var regex = new RegExp('^parking:');
         var dl = document.createElement('dl');
-        for (var side of ['both', 'empty', 'empty'].map(x => getTagsBlock(x, osm)))
+        for (var side of ['both', '', ''].map(x => getTagsBlock(x, osm)))
             dl.appendChild(side);
         form.appendChild(dl);
 
@@ -622,7 +622,7 @@ function getLaneInfoPanelContent(osm) {
         cancel.onclick =  () => removeFromOsmChangeset(osm.$id);
         form.appendChild(cancel);
 
-        if ((chooseSideTags(form, 'empty') || chooseSideTags(form, 'empty')) || !chooseSideTags(form, 'both')) {
+        if ((chooseSideTags(form, '') || chooseSideTags(form, '')) || !chooseSideTags(form, 'both')) {
             form[0].checked = false;
             dl.childNodes[0].style.display = 'none';
             dl.childNodes[1].style.display = 'block';
@@ -661,23 +661,23 @@ function getLaneInfoPanelContent(osm) {
         div.id = 'infoContent';
         div.appendChild(head);
         div.appendChild(document.createElement('hr'));
-        div.appendChild(getTagsBlockForViewer(osm.tag, 'empty'));
-        div.appendChild(getTagsBlockForViewer(osm.tag, 'empty'));
+        div.appendChild(getTagsBlockForViewer(osm.tag, ''));
+        div.appendChild(getTagsBlockForViewer(osm.tag, ''));
 
         return div;
     }
 }
 
 function setBacklight(osm) {
-    var polyline = lanes['empty' + osm.$id]
-        ? lanes['empty' + osm.$id].getLatLngs()
-        : lanes['empty' + osm.$id]
-            ? lanes['empty' + osm.$id].getLatLngs()
-            : lanes['empty' + osm.$id].getLatLngs();
+    var polyline = lanes['' + osm.$id]
+        ? lanes['' + osm.$id].getLatLngs()
+        : lanes['' + osm.$id]
+            ? lanes['' + osm.$id].getLatLngs()
+            : lanes['' + osm.$id].getLatLngs();
 
     var n = 3;
 
-    lanes['empty'] = L.polyline(polyline,
+    lanes[''] = L.polyline(polyline,
         {
             color: 'fuchsia',
             weight: offsetMajor * n - 4,
@@ -686,7 +686,7 @@ function setBacklight(osm) {
         })
         .addTo(map);
 
-    lanes['empty'] = L.polyline(polyline,
+    lanes[''] = L.polyline(polyline,
         {
             color: 'cyan',
             weight: offsetMajor * n - 4,
@@ -892,20 +892,20 @@ function cutWay(arg) {
     delete newWay.$uid;
     delete newWay.$timestamp;
 
-    if (lanes['empty' + oldWay.$id])
-        lanes['empty' + oldWay.$id].setLatLngs(oldWay.nd.map(x => nodes[x.$ref]));
+    if (lanes['' + oldWay.$id])
+        lanes['' + oldWay.$id].setLatLngs(oldWay.nd.map(x => nodes[x.$ref]));
 
-    if (lanes['empty' + oldWay.$id])
-        lanes['empty' + oldWay.$id].setLatLngs(oldWay.nd.map(x => nodes[x.$ref]));
+    if (lanes['' + oldWay.$id])
+        lanes['' + oldWay.$id].setLatLngs(oldWay.nd.map(x => nodes[x.$ref]));
 
-    if (lanes['empty' + oldWay.$id])
-        lanes['empty' + oldWay.$id].setLatLngs(oldWay.nd.map(x => nodes[x.$ref]));
+    if (lanes['' + oldWay.$id])
+        lanes['' + oldWay.$id].setLatLngs(oldWay.nd.map(x => nodes[x.$ref]));
 
-    if (lanes['empty'])
-        lanes['empty'].setLatLngs(oldWay.nd.map(x => nodes[x.$ref]));
+    if (lanes[''])
+        lanes[''].setLatLngs(oldWay.nd.map(x => nodes[x.$ref]));
 
-    if (lanes['empty'])
-        lanes['empty'].setLatLngs(oldWay.nd.map(x => nodes[x.$ref]));
+    if (lanes[''])
+        lanes[''].setLatLngs(oldWay.nd.map(x => nodes[x.$ref]));
 
     for (var marker in markers) {
         markers[marker].remove();
@@ -947,18 +947,18 @@ function oninputTimeIntervalTag() {
 function addOrUpdate() {
     var obj = formToOsmWay(this.form);
     var polyline;
-    if (lanes['empty' + obj.$id])
-        polyline = lanes['empty' + obj.$id].getLatLngs();
-    else if (lanes['empty' + obj.$id])
-        polyline = lanes['empty' + obj.$id].getLatLngs();
-    else if (lanes['empty' + obj.$id])
-        polyline = lanes['empty' + obj.$id].getLatLngs();
+    if (lanes['' + obj.$id])
+        polyline = lanes['' + obj.$id].getLatLngs();
+    else if (lanes['' + obj.$id])
+        polyline = lanes['' + obj.$id].getLatLngs();
+    else if (lanes['' + obj.$id])
+        polyline = lanes['' + obj.$id].getLatLngs();
 
 
     var emptyway = true;
-    for (var side of ['empty', 'empty']) {
+    for (var side of ['', '']) {
         var conditions = getConditions(side, obj.tag);
-        var id = side == 'empty' ? 'empty' + obj.$id : 'empty' + obj.$id;
+        var id = side == '' ? '' + obj.$id : '' + obj.$id;
         if (conditions.default != null) {
             if (lanes[id]) {
                 lanes[id].conditions = conditions;
@@ -974,13 +974,13 @@ function addOrUpdate() {
         }
     }
     if (emptyway) {
-        if (!lanes['empty' + obj.$id]) {
+        if (!lanes['' + obj.$id]) {
             var isMajor = wayIsMajor(obj.tag);
-            addLane(polyline, null, 'empty', obj, 0, isMajor);
+            addLane(polyline, null, '', obj, 0, isMajor);
         }
-    } else if (lanes['empty' + obj.$id]) {
-        lanes['empty' + obj.$id].remove();
-        delete lanes['empty' + obj.$id];
+    } else if (lanes['' + obj.$id]) {
+        lanes['' + obj.$id].remove();
+        delete lanes['' + obj.$id];
     }
 
     save({ target: this.form });
@@ -1127,10 +1127,10 @@ function closeLaneInfo(e) {
         delete markers[marker];
     }
 
-    if (lanes['empty'])
-        lanes['empty'].remove();
-    if (lanes['empty'])
-        lanes['empty'].remove();
+    if (lanes[''])
+        lanes[''].remove();
+    if (lanes[''])
+        lanes[''].remove();
 }
 
 map.on('moveend', mapMoveEnd);
